@@ -67,7 +67,7 @@ sendEmail = (fileBuffer) => {
     });
 
     let message = {
-        from: 'max_maluf@hotmail.com',
+        from: 'maxwillian63@gmail.com',
         to: 'max.maluf.mazzatech@estadao.com',
         subject: 'Planilha de hrs',
         text: 'PLanilha enviada pelo sistema',
