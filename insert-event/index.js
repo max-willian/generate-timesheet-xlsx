@@ -1,4 +1,3 @@
-const escapeHtml = require('escape-html');
 const admin = require("firebase-admin");
 const COLLECTION_NAME = 'mazzatech';
 
@@ -11,7 +10,7 @@ admin.initializeApp({
 
 const firestore = admin.firestore();
 
-const validEvents = ['entrada', 'saida', 'saida-almoco', 'entrada-almoco'];
+const validEvents = ['entrada', 'saida', 'saida-almoco', 'entrada-almoco', 'dayoff'];
 
 exports.helloHttp = (req, res) => {
 	if(req.method !== 'POST'){

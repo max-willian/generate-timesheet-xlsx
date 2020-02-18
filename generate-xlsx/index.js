@@ -1,8 +1,18 @@
 const ExcelJS = require('exceljs');
 const fs = require('fs');
 const nodemailer = require('nodemailer');
-const filename = 'assets/planilha.xlsx';
 const moment = require('moment');
+const admin = require("firebase-admin");
+const serviceAccount = require("./teste-cloud-functions-266613-firebase-adminsdk-p7pin-b391e86508.json");
+const filename = 'assets/planilha.xlsx';
+const COLLECTION_NAME = 'mazzatech';
+
+admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+    databaseURL: "https://teste-cloud-functions-266613.firebaseio.com"
+});
+
+const firestore = admin.firestore();
 
 exports.generateXls = (req, res) => {
     console.log('console log iniciando');
@@ -14,6 +24,9 @@ exports.generateXls = (req, res) => {
         .then(() => {
             workbook.eachSheet((worksheet) => {
                 let firstDate = req.body.month ? req.body.month : moment().startOf('month').format('YYYY-MM-DD');
+
+                let events = getEventsByMonth(firstDate.substring(0, 7));
+                res.send('testado'); return true;
 
                 worksheet.getCell('E6').value = new Date(firstDate);
 
@@ -54,7 +67,22 @@ exports.generateXls = (req, res) => {
                 });
             });
         });
-}
+};
+
+getEventsByMonth = (selectedMonth) => {
+     firestore.collection(COLLECTION_NAME)
+        .doc('banco_horas')
+        .collection(selectedMonth).get().then(doc => {
+            if (!doc.exists) {
+                console.log('No such document!');
+            } else {
+                console.log('Document data:', doc.data());
+                return doc.data();
+            }
+        }).catch(() => {
+            return false;
+        });
+};
 
 sendEmail = (fileBuffer) => {
     console.log('iniciando envio via email');
