@@ -70,26 +70,18 @@ exports.generateXls = (req, res) => {
 };
 
 const getEventsByMonth = async (selectedMonth) => {
-    return firestore.collection(COLLECTION_NAME).doc('banco_horas').collection(selectedMonth).get()
+    let data = {};
+    await firestore.collection(COLLECTION_NAME).doc('banco_horas').collection(selectedMonth).get()
     .then(documents => {
         documents.docs.forEach(doc => {
-            console.log('passou dentro do loop');
-            console.log(doc.data());
+            data[doc.id] = doc.data();
         });
-
-        return {status: true};
     })
     .catch((err) => {
-        console.log("caiu no catch", err);
-        return false;
+        throw new Error(err);
     });
 
-    /*if (!doc.exists) {
-        console.log('No such document!');
-        return false
-    } else {
-        return doc.data();
-    }*/
+    return data;
 };
 
 sendEmail = (fileBuffer) => {
