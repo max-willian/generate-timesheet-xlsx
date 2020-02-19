@@ -15,18 +15,18 @@ admin.initializeApp({
 const firestore = admin.firestore();
 
 exports.generateXls = (req, res) => {
-    console.log('console log iniciando');
     let workbook = new ExcelJS.Workbook();
 
     let fileData = fs.readFileSync(filename);
 
     workbook.xlsx.load(fileData)
         .then(() => {
-            workbook.eachSheet((worksheet) => {
+            workbook.eachSheet( async (worksheet) => {
                 let firstDate = req.body.month ? req.body.month : moment().startOf('month').format('YYYY-MM-DD');
 
-                let events = getEventsByMonth(firstDate.substring(0, 7));
-                res.send('testado'); return true;
+                let events = await getEventsByMonth(firstDate.substring(0, 7));
+                console.log(events);
+                res.send(JSON.stringify(events)); return true;
 
                 worksheet.getCell('E6').value = new Date(firstDate);
 
@@ -69,19 +69,27 @@ exports.generateXls = (req, res) => {
         });
 };
 
-getEventsByMonth = (selectedMonth) => {
-     firestore.collection(COLLECTION_NAME)
-        .doc('banco_horas')
-        .collection(selectedMonth).get().then(doc => {
-            if (!doc.exists) {
-                console.log('No such document!');
-            } else {
-                console.log('Document data:', doc.data());
-                return doc.data();
-            }
-        }).catch(() => {
-            return false;
+const getEventsByMonth = async (selectedMonth) => {
+    return firestore.collection(COLLECTION_NAME).doc('banco_horas').collection(selectedMonth).get()
+    .then(documents => {
+        documents.docs.forEach(doc => {
+            console.log('passou dentro do loop');
+            console.log(doc.data());
         });
+
+        return {status: true};
+    })
+    .catch((err) => {
+        console.log("caiu no catch", err);
+        return false;
+    });
+
+    /*if (!doc.exists) {
+        console.log('No such document!');
+        return false
+    } else {
+        return doc.data();
+    }*/
 };
 
 sendEmail = (fileBuffer) => {
